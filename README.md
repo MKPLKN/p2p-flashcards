@@ -2,6 +2,8 @@
 
 p2p-flashcards is a secure and private flashcard (minimalist) application designed for individuals who seek an effective method to memorize and test their knowledge on sensitive information such as passwords, PIN codes, and other critical data. Built with privacy at its core, the application operates peer-to-peer (P2P), ensuring that your data remains confidential and is accessible only to you.
 
+![Demo](resources/demo.gif)
+
 ## Project Setup
 
 ### Install
@@ -28,3 +30,6 @@ $ npm run build:mac
 # For Linux
 $ npm run build:linux
 ```
+
+### Launch
+After building the app for your operating system (e.g., using `npm run build:mac`), the executable will be located in the `dist` folder at the project root. For instance, on a Mac, your executable would be `dist/p2p-flashcards-1.0.0.dmg`.

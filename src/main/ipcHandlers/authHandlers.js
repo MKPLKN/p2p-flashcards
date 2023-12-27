@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { createUser, authUser, Memory } from 'p2p-auth'
+import { createUser, authUser, Memory, restoreUser } from 'p2p-auth'
 import { initMasterComponents } from 'p2p-resources'
 
 let isAuthenticated = false
@@ -11,12 +11,28 @@ ipcMain.handle('check-auth-status', async (event) => {
   return { isAuthenticated }
 })
 
+ipcMain.handle('restore-user-attempt', async (event, userData) => {
+  const { username, password, confirmPassword, seed: seedPhrase } = userData
+  try {
+    if (password !== confirmPassword) {
+      throw new Error('Password and confirmPassword should match.')
+    }
+
+    await restoreUser({ seedPhrase, username, password })
+    await initMasterComponents()
+
+    return { success: true }
+  } catch (error) {
+    return { succress: false, error }
+  }
+})
+
 ipcMain.handle('create-user-attempt', async (event, userData) => {
   const { username, password } = userData
   try {
-    await createUser({ username, password })
+    const { mnemonic } = await createUser({ username, password })
     await initMasterComponents()
-    return { success: true }
+    return { success: true, seed: mnemonic }
   } catch (error) {
     return { succress: false, error }
   }

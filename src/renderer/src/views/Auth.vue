@@ -320,7 +320,7 @@
                     Backup Your Seed Phrase
                   </DialogTitle>
                   <div
-                    class="text-left text-gray-700 text-sm rounded-xl shadow-md p-4 bg-gray-100"
+                    class="text-left text-indigo-700 text-sm font-semibold rounded-xl shadow-md p-4 bg-indigo-100"
                   >
                     {{ seed }}
                   </div>

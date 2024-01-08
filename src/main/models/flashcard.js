@@ -56,9 +56,9 @@ export class Flashcard {
   indexes (flashcard) {
     const { id, createdAt, updatedAt } = flashcard
     return [
-        `${this.prefix}:id:${id}`,
-        createdAt ? `${this.prefix}:created:${createdAt}` : null,
-        updatedAt ? `${this.prefix}:updated:${updatedAt}` : null
+      `${this.prefix}:id:${id}`,
+      createdAt ? `${this.prefix}:created:${createdAt}` : null,
+      updatedAt ? `${this.prefix}:updated:${updatedAt}` : null
     ].filter((i) => !!i)
   }
 

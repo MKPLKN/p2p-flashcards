@@ -1,14 +1,21 @@
 import { ipcMain } from 'electron'
 import { createUser, authUser, Memory, restoreUser } from 'p2p-auth'
-import { initMasterComponents } from 'p2p-resources'
+import { getMasterComponents, initMasterComponents } from 'p2p-resources'
+import { backupService, connectToCloud } from '../helpers'
 
 let isAuthenticated = false
-ipcMain.handle('check-auth-status', async (event) => {
+ipcMain.handle('user', async (event) => {
   try {
+    const { masterDb } = getMasterComponents()
+    const settings = await masterDb.getJsonValue('memoit-flashcard-settings', {})
     isAuthenticated = !!Memory.getKeyPair('pubkey')
-  } catch (error) {}
 
-  return { isAuthenticated }
+    const { connected, replicated } = backupService
+    return { isAuthenticated, settings, backupService: { connected, replicated } }
+  } catch (error) {
+    isAuthenticated = false
+    return { isAuthenticated }
+  }
 })
 
 ipcMain.handle('restore-user-attempt', async (event, userData) => {
@@ -42,10 +49,17 @@ ipcMain.handle('login-attempt', async (event, loginData) => {
   const { username, password } = loginData
   try {
     const { keyPair } = await authUser({ username, password })
-    await initMasterComponents()
+    const { masterDb } = await initMasterComponents()
+
+    const settings = await masterDb.getJsonValue('memoit-flashcard-settings', {})
+    if (settings.backup_pub_key) {
+      connectToCloud({ masterDb, pubkey: settings.backup_pub_key })
+    }
+
     isAuthenticated = !!(keyPair.publicKey && keyPair.secretKey)
-    return { success: isAuthenticated }
+    return { success: isAuthenticated, settings }
   } catch (error) {
+    console.log(error)
     return { error, success: false }
   }
 })

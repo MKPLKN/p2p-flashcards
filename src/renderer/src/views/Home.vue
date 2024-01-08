@@ -1,10 +1,34 @@
 <template>
-  <div v-if="pageLoaded" class="max-w-lg w-full mx-auto py-12 px-8">
+  <div v-if="pageLoaded" class="max-w-lg w-full mx-auto pt-6 pb-12 px-8">
     <div class="border-b border-gray-200 bg-white pb-5">
       <div
         class="-ml-4 -mt-4 flex flex-wrap items-start justify-between sm:flex-nowrap"
       >
         <div class="ml-4 mt-4">
+          <div class="mb-4">
+            <a
+              href="#"
+              class="uppercase text-xs font-semibold text-indigo-600 hover:underline hover:text-indigo-400"
+              @click.prevent="attemptToOpenBackupModal()"
+            >
+              Backup Your Data
+            </a>
+            <div class="flex items-center" v-if="isConnected">
+              <div
+                class="text-xs flex items-center text-green-500 uppercase tracking-wide"
+              >
+                <svg
+                  class="h-2 w-2 fill-green-500"
+                  viewBox="0 0 6 6"
+                  aria-hidden="true"
+                >
+                  <circle cx="3" cy="3" r="3" />
+                </svg>
+                <p class="ml-1">Connected</p>
+              </div>
+            </div>
+          </div>
+
           <div class="flex items-center justify-between w-full">
             <h3 class="text-base font-semibold leading-6 text-gray-900">
               Your Flashcards
@@ -424,7 +448,7 @@
           leave-to-class="opacity-0"
         >
           <div
-            v-if="showCorrectAnswerAlert"
+            v-if="successAlert.show"
             class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5"
           >
             <div class="rounded-md bg-green-50 p-4">
@@ -437,7 +461,7 @@
                 </div>
                 <div class="ml-3">
                   <h3 class="text-sm font-medium text-green-800">
-                    Congrats! Your answer was correct!
+                    {{ successAlert.text }}
                   </h3>
                 </div>
               </div>
@@ -757,6 +781,141 @@
       </Dialog>
     </TransitionRoot>
     <!-- DELETION MODAL END -->
+
+    <!-- BACKUP MODAL START -->
+    <TransitionRoot as="template" :show="openBackupModal">
+      <Dialog
+        as="div"
+        class="relative z-10"
+        @close="attemptToCloseBackupModal()"
+      >
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div
+            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          />
+        </TransitionChild>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div
+            class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+          >
+            <TransitionChild
+              as="template"
+              enter="ease-out duration-300"
+              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter-to="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leave-from="opacity-100 translate-y-0 sm:scale-100"
+              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel
+                class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+              >
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                  <div class="sm:flex sm:items-start">
+                    <div
+                      class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10"
+                    >
+                      <CloudArrowUpIcon
+                        class="h-6 w-6 text-indigo-600"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                      <DialogTitle
+                        as="h3"
+                        class="text-base font-semibold leading-6 text-gray-900"
+                      >
+                        Backup Your Data
+                      </DialogTitle>
+                      <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                          By replicating your data with a remote peer, the peer
+                          serves only as a host to improve data availability.
+                          <b>
+                            The remote peer <i><u>cannot</u></i> view your data;
+                          </b>
+                          only the private key holder (YOU), can access it.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="mt-2 text-left">
+                      <div class="isolate -space-y-px rounded-md shadow-sm">
+                        <div
+                          class="relative rounded-md px-3 pb-1.5 pt-2.5 ring-1 ring-inset ring-gray-300 focus-within:z-10 focus-within:ring-2 focus-within:ring-indigo-600"
+                        >
+                          <label
+                            for="question"
+                            class="block text-xs font-medium text-gray-900"
+                          >
+                            Remote Public Key
+                          </label>
+                          <input
+                            :disabled="isConnected"
+                            @keydown.enter="saveAndConnect()"
+                            v-model="backup.pubkey"
+                            type="text"
+                            name="question"
+                            id="question"
+                            class="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                            placeholder="d9c93....."
+                          />
+                        </div>
+                        <p
+                          v-if="isConnected"
+                          class="text-xs text-gray-700 pt-1"
+                        >
+                          You're connected. Disconnect from the current remote
+                          peer in order to change the key.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6"
+                >
+                  <button
+                    v-if="isConnected"
+                    type="button"
+                    class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                    @click="disconnect()"
+                  >
+                    Disconnect
+                  </button>
+                  <button
+                    v-if="!isConnected"
+                    type="button"
+                    class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto"
+                    @click="saveAndConnect()"
+                  >
+                    Save & Connect
+                  </button>
+                  <button
+                    type="button"
+                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    @click="attemptToCloseBackupModal()"
+                    ref="cancelButtonRef"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+    <!-- BACKUP MODAL END -->
   </div>
 </template>
 
@@ -784,7 +943,11 @@ import {
   XMarkIcon,
   CheckCircleIcon,
 } from "@heroicons/vue/20/solid";
-import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import {
+  CheckIcon,
+  ExclamationTriangleIcon,
+  CloudArrowUpIcon,
+} from "@heroicons/vue/24/outline";
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 function time(time, f = "yyyy-MM-dd HH:mm") {
@@ -812,12 +975,28 @@ const defFlashcard = {
 };
 const flashcard = ref({ ...defFlashcard });
 
+// @TODO: Make user store
+const settings = ref({});
 onMounted(async () => {
   pageLoaded.value = false;
   await store.getFlashcards();
+  await loadSettings();
   pageLoaded.value = true;
 });
 
+async function loadSettings() {
+  try {
+    const response = await ipcRenderer.invoke("user");
+    settings.value = response.settings || {};
+    backupService.value = response.backupService || defaultBackupService;
+  } catch (error) {
+    //
+  }
+}
+
+const isConnected = computed(
+  () => backupService.value.replicated || backupService.value.connected,
+);
 const flashcards = computed(() => store.flashcards);
 const hasFlashcards = computed(() => store.hasFlashcards);
 const answersMatch = computed(() => {
@@ -874,7 +1053,24 @@ const defActiveFlashcard = { question: "", userInput: "", showAnswer: false };
 const activeFlashcard = ref(defActiveFlashcard);
 const openAnswerModal = ref(false);
 const answerCheckInProgress = ref(false);
-const showCorrectAnswerAlert = ref(false);
+
+const successAlertDefaultState = {
+  show: false,
+  text: "",
+};
+const successAlert = ref({ ...successAlertDefaultState });
+function triggerSuccessAlert(msg) {
+  if (!msg) return;
+
+  successAlert.value = {
+    show: true,
+    text: msg,
+  };
+  setTimeout(() => {
+    successAlert.value = successAlertDefaultState;
+  }, 3500);
+}
+
 const showWrongAnswerAlert = ref(false);
 function attemptToCloseAnswerModal() {
   openAnswerModal.value = false;
@@ -918,13 +1114,10 @@ async function checkAnswer(flashcard) {
     // Trigger the confetti explosion
     createConfetti();
 
+    triggerSuccessAlert("Congrats! Your answer was correct!");
     showWrongAnswerAlert.value = false;
-    showCorrectAnswerAlert.value = true;
     activeFlashcard.value = defActiveFlashcard;
     openAnswerModal.value = false;
-    setTimeout(() => {
-      showCorrectAnswerAlert.value = false;
-    }, 3500);
   }
 
   // Handle wrong answers
@@ -997,6 +1190,46 @@ function attemptToCloseDeletionModal() {
     activeFlashcard.value = defActiveFlashcard;
   }, 250);
 }
+
+const backup = ref({});
+const openBackupModal = ref(false);
+function attemptToOpenBackupModal() {
+  openBackupModal.value = true;
+  backup.value.pubkey = settings.value.backup_pub_key;
+}
+function attemptToCloseBackupModal() {
+  openBackupModal.value = false;
+}
+async function disconnect() {
+  const response = await ipcRenderer.invoke("disconnect");
+
+  if (response.success) {
+    await loadSettings();
+    backupService.value = defaultBackupService;
+    triggerSuccessAlert("You're disconnected");
+    attemptToCloseBackupModal();
+  }
+}
+async function saveAndConnect() {
+  if (!backup.value.pubkey) return;
+
+  const response = await ipcRenderer.invoke("save-and-connect", {
+    pubkey: backup.value.pubkey,
+  });
+
+  if (response.success) {
+    triggerSuccessAlert("Saved");
+    attemptToCloseBackupModal();
+  }
+}
+const defaultBackupService = { connected: false, replicated: false };
+const backupService = ref({ ...defaultBackupService });
+ipcRenderer.on("event:backup-service:connect", (event, payload) => {
+  backupService.value.connected = payload.success;
+});
+ipcRenderer.on("event:backup-service:replicate", async (event, payload) => {
+  backupService.value.replicated = payload.success;
+});
 
 const flashcardsQueue = ref([]);
 const queueInProgress = ref(false);

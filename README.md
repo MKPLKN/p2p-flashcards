@@ -1,10 +1,3 @@
-### Todo
-
-- [ ] Add a simple settings page for logged-in users.
-- [ ] Join a hyperswarm topic based on the related setting.
-- [ ] Replicate the master DB
-- [ ] Add an indicator of the connection status.
-
 # P2P Flashcards
 
 p2p-flashcards is a secure and private flashcard (minimalist) application designed for individuals who seek an effective method to memorize and test their knowledge on sensitive information such as passwords, PIN codes, and other critical data. Built with privacy at its core, the application operates peer-to-peer (P2P), ensuring that your data remains confidential and is accessible only to you.

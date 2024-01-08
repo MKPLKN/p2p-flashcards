@@ -6,11 +6,12 @@ import { Flashcard } from './models/flashcard'
 import { getMasterComponents } from 'p2p-resources'
 import { isAuthenticated } from './ipcHandlers/authHandlers'
 import './ipcHandlers'
+import { disconnectFromCloud } from './helpers'
 
-let mainWindow = null
+global.mainWindow = null
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({
+  global.mainWindow = new BrowserWindow({
     width: 450,
     height: 700,
     resizable: false,
@@ -23,11 +24,11 @@ function createWindow () {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  global.mainWindow.on('ready-to-show', () => {
+    global.mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  global.mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
@@ -35,9 +36,9 @@ function createWindow () {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    global.mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    global.mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -67,8 +68,19 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  await disconnectFromCloud()
   if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+let isQuitting = false
+app.on('before-quit', async (event) => {
+  if (!isQuitting) {
+    event.preventDefault()
+    await disconnectFromCloud()
+    isQuitting = true
     app.quit()
   }
 })
@@ -77,10 +89,10 @@ app.on('window-all-closed', () => {
 // code. You can also put them in separate files and require them here.
 
 function bringAppToFront () {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore()
-    mainWindow.show()
-    mainWindow.focus()
+  if (global.mainWindow) {
+    if (global.mainWindow.isMinimized()) global.mainWindow.restore()
+    global.mainWindow.show()
+    global.mainWindow.focus()
   }
 }
 
@@ -97,7 +109,7 @@ async function checkForDueFlashcards () {
   const queue = flashcards.filter((fc) => fc.nextAsk.nextDate <= now)
   if (queue.length > 0) {
     bringAppToFront()
-    mainWindow.webContents.send('flashcards-in-queue', queue)
+    global.mainWindow.webContents.send('flashcards-in-queue', queue)
   }
 }
 // Check every minute

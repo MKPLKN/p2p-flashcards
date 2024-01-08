@@ -20,8 +20,10 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
     "electron-updater": "^6.1.1",
-    "p2p-resources": "^0.0.2",
+    "hyperdht": "^6.11.3",
+    "hyperswarm": "^4.7.13",
     "p2p-auth": "^0.0.6",
+    "p2p-resources": "^0.0.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

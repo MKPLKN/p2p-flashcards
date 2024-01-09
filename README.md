@@ -4,6 +4,12 @@ p2p-flashcards is a secure and private flashcard (minimalist) application design
 
 ![Demo](resources/demo.gif)
 
+## Features
+- Create and restore users using [`p2p-auth`](https://github.com/MKPLKN/p2p-auth)
+- Create and delete flashcards for memorizing important things, such as PIN codes, passwords, Bitcoin seed phrases – you name it.
+- Keep track of your correct and wrong answers
+- Replicate data with a remote peer of your choice for better availability.
+
 ## Project Setup
 
 ### Install

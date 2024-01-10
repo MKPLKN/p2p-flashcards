@@ -22,8 +22,8 @@
     "electron-updater": "^6.1.1",
     "hyperdht": "^6.11.3",
     "hyperswarm": "^4.7.13",
-    "p2p-auth": "^0.0.6",
-    "p2p-resources": "^0.0.3",
+    "p2p-auth": "^0.0.8",
+    "p2p-resources": "^0.0.6",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

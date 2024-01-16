@@ -1,5 +1,5 @@
-const crypto = require('crypto')
-const { v4: uuidv4 } = require('uuid')
+import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 const MIN_IN_MS = 60 * 1000
 const H_IN_MS = 60 * MIN_IN_MS

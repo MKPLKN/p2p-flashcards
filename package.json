@@ -6,6 +6,8 @@
   "author": "peertopeerhub.com",
   "homepage": "https://peertopeerhub.com",
   "scripts": {
+    "test": "standard && node tests/all.js",
+    "test:generate": "brittle -r tests/all.js tests/*.js",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "start": "electron-vite preview",

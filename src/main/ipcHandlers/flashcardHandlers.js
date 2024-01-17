@@ -1,5 +1,5 @@
-import { Flashcard } from '../models/flashcard.js'
-import { getMasterDatabase } from '../helpers.js'
+const { Flashcard } = require('../models/flashcard.js')
+const { getMasterDatabase } = require('../helpers.js')
 
 function validateCreateRequest (payload) {
   const { question, answer, confirmation } = payload
@@ -12,7 +12,7 @@ function validateCreateRequest (payload) {
   }
 }
 
-export function createFlashcardHandlers ({ db }) {
+function createFlashcardHandlers ({ db }) {
   return {
     index: async () => {
       const model = new Flashcard({ masterDb: db || getMasterDatabase() })
@@ -46,3 +46,5 @@ export function createFlashcardHandlers ({ db }) {
     }
   }
 }
+
+module.exports = { createFlashcardHandlers }

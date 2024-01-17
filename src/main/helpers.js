@@ -1,17 +1,17 @@
-import DHT from 'hyperdht'
-import Hyperswarm from 'hyperswarm'
-import goodbye from 'graceful-goodbye'
-import b4a from 'b4a'
-import { Memory } from 'p2p-auth'
-import { getMasterComponents } from 'p2p-resources'
+const DHT = require('hyperdht')
+const Hyperswarm = require('hyperswarm')
+const goodbye = require('graceful-goodbye')
+const b4a = require('b4a')
+const { Memory } = require('p2p-auth')
+const { getMasterComponents } = require('p2p-resources')
 
-export const wait = (ms) => {
+const wait = (ms) => {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
 }
 
-export function getMasterDatabase () {
+function getMasterDatabase () {
   const { masterDb } = getMasterComponents()
   return masterDb
 }
@@ -38,7 +38,7 @@ const initSwarm = (opts = {}) => {
   }
 }
 
-export const backupService = {
+const backupService = {
   connected: false,
   replicated: false,
   swarm: null,
@@ -46,7 +46,7 @@ export const backupService = {
   swarmConnection: null
 }
 
-export async function disconnectFromCloud () {
+async function disconnectFromCloud () {
   if (backupService.connection) {
     await backupService.connection.destroy({ force: true })
   }
@@ -61,7 +61,7 @@ export async function disconnectFromCloud () {
   backupService.swarmConnection = null
 }
 
-export async function connectToCloud (opts = {}) {
+async function connectToCloud (opts = {}) {
   const { masterDb, pubkey, replicated, connected } = opts
 
   const pubkeyBuffer = typeof pubkey === 'string' ? b4a.from(pubkey, 'hex') : pubkey
@@ -144,4 +144,12 @@ export async function connectToCloud (opts = {}) {
     }
     conn.write(JSON.stringify(payload))
   }
+}
+
+module.exports = {
+  wait,
+  backupService,
+  getMasterDatabase,
+  disconnectFromCloud,
+  connectToCloud
 }

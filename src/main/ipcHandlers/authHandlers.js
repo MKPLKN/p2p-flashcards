@@ -1,7 +1,7 @@
-import { ipcMain } from 'electron'
-import { createUser, authUser, Memory, restoreUser } from 'p2p-auth'
-import { getMasterComponents, initMasterComponents } from 'p2p-resources'
-import { backupService, connectToCloud } from '../helpers'
+const { ipcMain } = require('electron')
+const { createUser, authUser, Memory, restoreUser } = require('p2p-auth')
+const { getMasterComponents, initMasterComponents } = require('p2p-resources')
+const { backupService, connectToCloud } = require('../helpers')
 
 let isAuthenticated = false
 ipcMain.handle('user', async (event) => {
@@ -64,4 +64,4 @@ ipcMain.handle('login-attempt', async (event, loginData) => {
   }
 })
 
-export { isAuthenticated }
+module.exports = { isAuthenticated }

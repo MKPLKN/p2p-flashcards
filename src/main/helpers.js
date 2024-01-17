@@ -11,6 +11,11 @@ export const wait = (ms) => {
   })
 }
 
+export function getMasterDatabase () {
+  const { masterDb } = getMasterComponents()
+  return masterDb
+}
+
 const initSwarm = (opts = {}) => {
   const swarm = new Hyperswarm(opts)
 

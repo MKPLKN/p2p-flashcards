@@ -165,9 +165,9 @@ export class Flashcard {
 
   async find (id) {
     const flashcard = await this.masterDb.getJsonValue(this.getFullKey(id))
-    if (flashcard) {
-      this.flashcard = flashcard
-    }
+
+    this.flashcard = flashcard || null
+
     return this
   }
 

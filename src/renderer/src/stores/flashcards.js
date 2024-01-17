@@ -17,11 +17,11 @@ export const useFlashcardStore = defineStore('flashcards', {
       return await ipcRenderer.invoke('check-answer', { id, userInput, triggerType })
     },
     async getFlashcards () {
-      this.flashcards = await ipcRenderer.invoke('get-flashcards')
+      this.flashcards = await ipcRenderer.invoke('flashcards/index')
     },
     async addFlashcard (newCard) {
       const { success, flashcard } = await ipcRenderer.invoke(
-        'add-flashcard',
+        'flashcards/store',
         { ...newCard }
       )
       if (success) {
@@ -37,7 +37,7 @@ export const useFlashcardStore = defineStore('flashcards', {
       }
     },
     async deleteFlashcard (id) {
-      await ipcRenderer.invoke('delete-flashcard', id)
+      await ipcRenderer.invoke('flashcards/destroy', id)
       await this.getFlashcards()
     },
     getFlashcardById (id) {

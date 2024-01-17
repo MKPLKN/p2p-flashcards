@@ -1027,8 +1027,8 @@ async function addNewFlashcard() {
   }
 
   newFlashcardInProgress.value = true;
-  const { question, answer } = flashcard.value;
-  await store.addFlashcard({ question, answer });
+  const { question, answer, confirmation } = flashcard.value;
+  await store.addFlashcard({ question, answer, confirmation });
   newFlashcardInProgress.value = false;
 
   attemptToCloseCreationModal();

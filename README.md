@@ -21,21 +21,14 @@ $ npm install
 ### Development
 
 ```bash
-$ npm run dev
+$ npm run start
 ```
 
 ### Build
 
 ```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
+$ npm run make
 ```
 
 ### Launch
-After building the app for your operating system (e.g., using `npm run build:mac`), the executable will be located in the `dist` folder at the project root. For instance, on a Mac, your executable would be `dist/p2p-flashcards-1.0.0.dmg`.
+After building the app for your operating system (using `npm run make`), the executable will be located in the `out` folder at the project root. For instance, on a Mac, your executable would be `out/make/p2p-flashcards-2.0.0-arm64.dmg`.

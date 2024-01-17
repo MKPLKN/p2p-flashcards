@@ -379,7 +379,7 @@ import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const { ipcRenderer } = window.electron;
+const { ipcRenderer } = window;
 
 const tabs = ref([
   { name: "Login", href: "#", current: false },

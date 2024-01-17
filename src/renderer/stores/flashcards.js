@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-const { ipcRenderer } = window.electron
+const { ipcRenderer } = window
 
 export const useFlashcardStore = defineStore('flashcards', {
   state: () => ({

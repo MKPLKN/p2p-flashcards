@@ -1,48 +1,48 @@
-import { ipcMain } from 'electron'
-import { getMasterComponents } from 'p2p-resources'
-import { Flashcard } from '../models/flashcard'
+import { Flashcard } from '../models/flashcard.js'
+import { getMasterDatabase } from '../helpers.js'
 
-ipcMain.handle('add-flashcard', async (event, flashcard) => {
-  try {
-    const { masterDb } = getMasterComponents()
-
-    const model = new Flashcard({ masterDb })
-    const card = await model.create(flashcard)
-
-    return { success: true, flashcard: card }
-  } catch (error) {
-    return { success: false, flashcard: null }
-  }
-})
-
-ipcMain.handle('update-flashcard', async (event, { id, updatedFlashcard }) => {
-  const { masterDb } = getMasterComponents()
-  const flashcards = await masterDb.getJsonValue('memoit-flashcards')
-
-  const index = flashcards.findIndex((f) => f.id === id)
-  if (index !== -1) {
-    flashcards[index] = updatedFlashcard
-    await masterDb.putJson('memoit-flashcards', flashcards)
-  }
-  return flashcards
-})
-
-ipcMain.handle('delete-flashcard', async (event, id) => {
-  const { masterDb } = getMasterComponents()
-
-  const model = new Flashcard({ masterDb })
-  await (await model.find(id)).delete()
-})
-
-ipcMain.handle('get-flashcards', async () => {
-  const { masterDb } = getMasterComponents()
-
-  const model = new Flashcard({ masterDb })
-  const flashcards = await model.getAll()
-
-  for (const fc of flashcards) {
-    fc.asks = await model.getAsks(fc.id)
+function validateCreateRequest (payload) {
+  const { question, answer, confirmation } = payload
+  if (!question || !answer || !confirmation) {
+    throw new Error('Invalid flashcard')
   }
 
-  return flashcards
-})
+  if (answer !== confirmation) {
+    throw new Error('Invalid flashcard')
+  }
+}
+
+export function createFlashcardHandlers ({ db }) {
+  return {
+    index: async () => {
+      const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+      const flashcards = await model.getAll()
+
+      for (const fc of flashcards) {
+        fc.asks = await model.getAsks(fc.id)
+      }
+
+      return flashcards
+    },
+
+    store: async (event, payload) => {
+      if (event && !payload) payload = event
+
+      try {
+        validateCreateRequest(payload)
+        const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+        const card = await model.create(payload)
+
+        return { success: true, flashcard: card }
+      } catch (error) {
+        return { success: false, flashcard: null }
+      }
+    },
+
+    destroy: async (event, payload) => {
+      if (event && !payload) payload = event
+      const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+      await (await model.find(payload)).delete()
+    }
+  }
+}

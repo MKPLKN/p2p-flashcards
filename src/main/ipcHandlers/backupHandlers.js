@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron'
-import { getMasterComponents } from 'p2p-resources'
-import { connectToCloud, disconnectFromCloud } from '../helpers.js'
+const { ipcMain } = require('electron')
+const { getMasterComponents } = require('p2p-resources')
+const { connectToCloud, disconnectFromCloud } = require('../helpers.js')
 
 ipcMain.handle('disconnect', async (event, payload) => {
   try {

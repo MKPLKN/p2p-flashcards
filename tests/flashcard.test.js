@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import { test } from 'brittle'
-import { createUser, setConfig as setAuthConfig, loadConfigs as loadAuthConfig } from 'p2p-auth'
-import { loadConfigs as loadResourceConfig, setConfig as setResourceConfig, initMasterComponents } from 'p2p-resources'
-import { createFlashcardHandlers } from '../src/main/ipcHandlers/flashcardHandlers.js'
-import { Flashcard } from '../src/main/models/flashcard.js'
+const fs = require('fs/promises')
+const { test } = require('brittle')
+const { createUser, setConfig: setAuthConfig, loadConfigs: loadAuthConfig } = require('p2p-auth')
+const { loadConfigs: loadResourceConfig, setConfig: setResourceConfig, initMasterComponents } = require('p2p-resources')
+const { createFlashcardHandlers } = require('../src/main/ipcHandlers/flashcardHandlers.js')
+const { Flashcard } = require('../src/main/models/flashcard.js')
 
 setAuthConfig('usersLocation', './tests/users')
 loadAuthConfig()

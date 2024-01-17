@@ -11,7 +11,7 @@ import router from "./router";
 
 const authStore = useAuthStore();
 const pageLoaded = ref(false);
-const { ipcRenderer } = window.electron;
+const { ipcRenderer } = window;
 
 onMounted(async () => {
   const { isAuthenticated } = await ipcRenderer.invoke("user");

@@ -963,7 +963,7 @@ function getSuccessRate(flashcard) {
   }
   return Number((stats.timesCorrect / stats.timesAnswered) * 100).toFixed(2);
 }
-const { ipcRenderer } = window.electron;
+const { ipcRenderer } = window;
 const store = useFlashcardStore();
 const pageLoaded = ref(false);
 const openCreationModal = ref(false);
@@ -995,7 +995,7 @@ async function loadSettings() {
 }
 
 const isConnected = computed(
-  () => backupService.value.replicated || backupService.value.connected,
+  () => backupService.value.replicated || backupService.value.connected
 );
 const flashcards = computed(() => store.flashcards);
 const hasFlashcards = computed(() => store.hasFlashcards);

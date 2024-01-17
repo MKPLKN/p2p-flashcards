@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron'
-import { getMasterComponents } from 'p2p-resources'
-import { Flashcard } from '../models/flashcard'
+const { ipcMain } = require('electron')
+const { getMasterComponents } = require('p2p-resources')
+const { Flashcard } = require('../models/flashcard')
 
 ipcMain.handle('get-answers', async (event, payload) => {
   const { id } = payload

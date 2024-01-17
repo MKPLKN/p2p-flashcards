@@ -1,5 +1,5 @@
-import crypto from 'crypto'
-import { v4 as uuidv4 } from 'uuid'
+const crypto = require('crypto')
+const { v4: uuidv4 } = require('uuid')
 
 const MIN_IN_MS = 60 * 1000
 const H_IN_MS = 60 * MIN_IN_MS
@@ -45,7 +45,7 @@ function getRandomNumberBetween (min, max) {
   return (Math.random() * (max - min) + min) | 0
 }
 
-export class Flashcard {
+class Flashcard {
   constructor ({ masterDb, id }) {
     this.masterDb = masterDb
     this.prefix = 'memoit-flashcard'
@@ -234,3 +234,5 @@ export class Flashcard {
     return cards
   }
 }
+
+module.exports = { Flashcard }

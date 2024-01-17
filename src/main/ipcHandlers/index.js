@@ -1,4 +1,4 @@
-import './backupHandlers'
-import './authHandlers'
-import './flashcardHandlers'
-import './answerHandlers'
+require('./backupHandlers.js')
+require('./authHandlers.js')
+require('./flashcardHandlers.js')
+require('./answerHandlers.js')

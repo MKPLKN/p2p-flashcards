@@ -1,12 +1,9 @@
-// const './ipcHandlers'
 const path = require('path')
-
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow } = require('electron')
 const { disconnectFromCloud } = require('../../src/main/helpers.js')
 const { Flashcard } = require('../../src/main/models/flashcard.js')
 const { getMasterComponents } = require('p2p-resources')
 const { isAuthenticated } = require('../../src/main/ipcHandlers/authHandlers.js')
-const { createFlashcardHandlers } = require('../../src/main/ipcHandlers/flashcardHandlers.js')
 require('../../src/main/ipcHandlers/index.js')
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -95,12 +92,3 @@ async function checkForDueFlashcards () {
 }
 // Check every minute
 setInterval(checkForDueFlashcards, 1000 * 60)
-
-/**
- * Endpoints
- *
- */
-const flashcardHandlers = createFlashcardHandlers({ })
-ipcMain.handle('flashcards/index', flashcardHandlers.index)
-ipcMain.handle('flashcards/store', flashcardHandlers.store)
-ipcMain.handle('flashcards/destroy', flashcardHandlers.destroy)

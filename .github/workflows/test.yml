@@ -1,4 +1,4 @@
-name: Build Status
+name: NPM Tests
 on:
   push:
     branches:

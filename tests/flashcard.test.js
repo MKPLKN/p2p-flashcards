@@ -4,6 +4,9 @@ const { createUser, setConfig: setAuthConfig, loadConfigs: loadAuthConfig } = re
 const { loadConfigs: loadResourceConfig, setConfig: setResourceConfig, initMasterComponents } = require('p2p-resources')
 const { createFlashcardHandlers } = require('../src/main/ipcHandlers/flashcardHandlers.js')
 const { Flashcard } = require('../src/main/models/flashcard.js')
+const { exec } = require('child_process')
+const { promisify } = require('util')
+const execProm = promisify(exec)
 
 setAuthConfig('usersLocation', './tests/users')
 loadAuthConfig()
@@ -12,8 +15,18 @@ setResourceConfig('resourcesLocation', './tests/resources')
 loadResourceConfig()
 
 async function cleanUp () {
-  await fs.rm('./tests/users', { recursive: true })
-  await fs.rm('./tests/resources', { recursive: true })
+  try {
+    // Check if the platform is Windows
+    if (process.platform === 'win32') {
+      await execProm('rmdir /s /q .\\tests\\users')
+      await execProm('rmdir /s /q .\\tests\\resources')
+    } else {
+      await fs.rm('./tests/users', { recursive: true })
+      await fs.rm('./tests/resources', { recursive: true })
+    }
+  } catch (error) {
+    console.log('Cleanup error:', error)
+  }
 }
 
 test('flashcards/store', async (t) => {

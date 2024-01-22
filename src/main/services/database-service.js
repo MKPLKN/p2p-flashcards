@@ -76,6 +76,9 @@ class DatabaseService {
     this.db.replicate(socket)
     this.replicated = true
     EventService.emit('db:replicated', { socket })
+    this.db.core.once('append', () => {
+      EventService.emit('db:replicated:append', { socket })
+    })
   }
 
   _socketOnError (error) {

@@ -1,7 +1,7 @@
 {
   "name": "p2p-flashcards",
   "productName": "p2p-flashcards",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Private flashcards to memorise important things",
   "main": ".vite/build/index.js",
   "scripts": {

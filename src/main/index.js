@@ -1,20 +1,17 @@
 const path = require('path')
 const { app, BrowserWindow } = require('electron')
-const { disconnectFromCloud } = require('../../src/main/helpers.js')
-const { Flashcard } = require('../../src/main/models/flashcard.js')
-const { getMasterComponents } = require('p2p-resources')
-const { isAuthenticated } = require('../../src/main/ipcHandlers/authHandlers.js')
-require('../../src/main/ipcHandlers/index.js')
+const { EventService } = require('../../src/main/services/event-service.js')
+require('../../src/main/routes.js')
+require('../../src/main/init.js')
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
-global.mainWindow = null
 const createWindow = () => {
   // Create the browser window.
-  global.mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 450,
     height: 700,
     resizable: false,
@@ -26,15 +23,58 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    global.mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
+    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
-    global.mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
+    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
   }
 
   // Open the DevTools.
   if (['dev', 'development'].includes(process.env.NODE_ENV)) {
-    global.mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
   }
+
+  EventService.on('cloud:connected', (payload) => {
+    if (mainWindow.isDestroyed()) return
+
+    mainWindow.webContents.send('cloud:connected', {
+      success: true,
+      message: 'Connected!'
+    })
+  })
+  EventService.on('cloud:disconnected', (payload) => {
+    if (mainWindow.isDestroyed()) return
+
+    mainWindow.webContents.send('cloud:connected', {
+      success: false,
+      code: 1,
+      message: 'Connection closed'
+    })
+  })
+
+  EventService.on('db:replicated', (payload) => {
+    if (mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('db:replicated', {
+      success: true,
+      message: 'Real-time data backup activated.'
+    })
+  })
+  EventService.on('db:socket:closed', () => {
+    if (mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('db:replicated', {
+      success: false,
+      code: 1,
+      message: 'Real-time data backup closed.'
+    })
+  })
+
+  EventService.on('flashcards-in-queue', (flashcards) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return
+
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+    mainWindow.webContents.send('flashcards-in-queue', flashcards)
+  })
 }
 
 // This method will be called when Electron has finished
@@ -46,14 +86,23 @@ app.on('ready', createWindow)
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', async () => {
-  await disconnectFromCloud()
+  EventService.emit('window-all-closed')
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
+process.on('SIGINT', () => {
+  app.quit()
+})
+
+EventService.on('final-goodbye', () => {
+  app.exit()
+})
+
 app.on('before-quit', async (event) => {
-  await disconnectFromCloud()
+  event.preventDefault()
+  EventService.emit('before-quit', event)
 })
 
 app.on('activate', () => {
@@ -66,29 +115,3 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-function bringAppToFront () {
-  if (global.mainWindow) {
-    if (global.mainWindow.isMinimized()) global.mainWindow.restore()
-    global.mainWindow.show()
-    global.mainWindow.focus()
-  }
-}
-
-async function checkForDueFlashcards () {
-  if (!isAuthenticated) return
-
-  const now = new Date().getTime()
-
-  const { masterDb } = getMasterComponents()
-
-  const model = new Flashcard({ masterDb })
-  const flashcards = await model.getAll()
-
-  const queue = flashcards.filter((fc) => fc.nextAsk.nextDate <= now)
-  if (queue.length > 0) {
-    bringAppToFront()
-    global.mainWindow.webContents.send('flashcards-in-queue', queue)
-  }
-}
-// Check every minute
-setInterval(checkForDueFlashcards, 1000 * 60)

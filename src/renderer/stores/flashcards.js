@@ -11,10 +11,10 @@ export const useFlashcardStore = defineStore('flashcards', {
   },
   actions: {
     async getAnswers (id) {
-      return await ipcRenderer.invoke('get-answers', { id })
+      return await ipcRenderer.invoke('answers/index', { id })
     },
     async checkAnswer (id, { userInput, triggerType }) {
-      return await ipcRenderer.invoke('check-answer', { id, userInput, triggerType })
+      return await ipcRenderer.invoke('answers/store', { id, userInput, triggerType })
     },
     async getFlashcards () {
       this.flashcards = await ipcRenderer.invoke('flashcards/index')

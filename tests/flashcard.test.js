@@ -1,39 +1,12 @@
-const fs = require('fs/promises')
 const { test } = require('brittle')
-const { createUser, setConfig: setAuthConfig, loadConfigs: loadAuthConfig } = require('p2p-auth')
-const { loadConfigs: loadResourceConfig, setConfig: setResourceConfig, initMasterComponents } = require('p2p-resources')
-const { createFlashcardHandlers } = require('../src/main/ipcHandlers/flashcardHandlers.js')
-const { Flashcard } = require('../src/main/models/flashcard.js')
-const { exec } = require('child_process')
-const { promisify } = require('util')
-const execProm = promisify(exec)
+const { beforeStart, cleanUp, createAndLogin } = require('./helpers.js')
+const { flashcardHandlers } = require('../src/main/ipcHandlers/index.js')
+const { userService } = require('../src/main/init.js')
 
-setAuthConfig('usersLocation', './tests/users')
-loadAuthConfig()
-
-setResourceConfig('resourcesLocation', './tests/resources')
-loadResourceConfig()
-
-async function cleanUp () {
-  try {
-    // Check if the platform is Windows
-    if (process.platform === 'win32') {
-      await execProm('rmdir /s /q .\\tests\\users')
-      await execProm('rmdir /s /q .\\tests\\resources')
-    } else {
-      await fs.rm('./tests/users', { recursive: true })
-      await fs.rm('./tests/resources', { recursive: true })
-    }
-  } catch (error) {
-    console.log('Cleanup error:', error)
-  }
-}
+beforeStart()
 
 test('flashcards/store', async (t) => {
-  await createUser({ username: 'j-test', password: 'pass' })
-  const { masterDb: db } = await initMasterComponents()
-
-  const handlers = createFlashcardHandlers({ db })
+  await createAndLogin()
   let response
 
   // Invalid
@@ -49,14 +22,14 @@ test('flashcards/store', async (t) => {
     { question: 'Question', answer: 'Answer', confirmation: 'Confirmation' }
   ]
   for await (const payload of invalid) {
-    response = await handlers.store(payload)
+    response = await flashcardHandlers.store(payload)
     t.is(response.success, false)
   }
 
   // Valid
-  const model = new Flashcard({ masterDb: db })
+  const model = userService.databaseService.model('flashcard')
   t.is((await model.getAll()).length, 0)
-  response = await handlers.store({
+  response = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
@@ -68,23 +41,21 @@ test('flashcards/store', async (t) => {
 })
 
 test('flashcards/index', async (t) => {
-  await createUser({ username: 'j-test', password: 'pass' })
-  const { masterDb: db } = await initMasterComponents()
-  const model = new Flashcard({ masterDb: db })
-  const handlers = createFlashcardHandlers({ db })
+  await createAndLogin()
+  const model = userService.databaseService.model('flashcard')
 
   t.is((await model.getAll()).length, 0)
-  const { flashcard: firstCard } = await handlers.store({
+  const { flashcard: firstCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
   })
-  const { flashcard: secondCard } = await handlers.store({
+  const { flashcard: secondCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
   })
-  const { flashcard: thirdCard } = await handlers.store({
+  const { flashcard: thirdCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
@@ -99,22 +70,20 @@ test('flashcards/index', async (t) => {
 })
 
 test('flashcards/destroy', async (t) => {
-  await createUser({ username: 'j-test', password: 'pass' })
-  const { masterDb: db } = await initMasterComponents()
-  const model = new Flashcard({ masterDb: db })
-  const handlers = createFlashcardHandlers({ db })
+  await createAndLogin()
+  const model = userService.databaseService.model('flashcard')
 
-  const { flashcard: firstCard } = await handlers.store({
+  const { flashcard: firstCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
   })
-  const { flashcard: secondCard } = await handlers.store({
+  const { flashcard: secondCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
   })
-  const { flashcard: thirdCard } = await handlers.store({
+  const { flashcard: thirdCard } = await flashcardHandlers.store({
     question: 'Test question',
     answer: 'Answer',
     confirmation: 'Answer'
@@ -126,7 +95,7 @@ test('flashcards/destroy', async (t) => {
   // Delete
   await model.find(secondCard.id)
   t.unlike(null, model.flashcard)
-  await handlers.destroy(secondCard.id)
+  await flashcardHandlers.destroy(secondCard.id)
   await model.find(secondCard.id)
   t.is(null, model.flashcard)
 

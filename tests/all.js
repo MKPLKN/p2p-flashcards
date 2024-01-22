@@ -7,7 +7,9 @@ async function runTests () {
 
   test.pause()
 
+  await import('./answers.test.js')
   await import('./flashcard.test.js')
+  await import('./helpers.js')
 
   test.resume()
 }

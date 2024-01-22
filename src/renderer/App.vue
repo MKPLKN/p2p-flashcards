@@ -14,7 +14,7 @@ const pageLoaded = ref(false);
 const { ipcRenderer } = window;
 
 onMounted(async () => {
-  const { isAuthenticated } = await ipcRenderer.invoke("user");
+  const { isAuthenticated } = await ipcRenderer.invoke("user/get");
 
   authStore.setAuthStatus(isAuthenticated);
   if (authStore.isAuthenticated) {

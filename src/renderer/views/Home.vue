@@ -956,6 +956,19 @@ function time(time, f = "yyyy-MM-dd HH:mm") {
 function timeAgo(date) {
   return formatDistanceToNow(date, { addSuffix: true });
 }
+async function closeAllModals() {
+  return new Promise((resolve) => {
+    openCreationModal.value = false;
+    openAnswerModal.value = false;
+    openViewModal.value = false;
+    openDeletionModal.value = false;
+    openBackupModal.value = false;
+
+    setTimeout(() => {
+      resolve(true);
+    }, 250);
+  });
+}
 function getSuccessRate(flashcard) {
   const { stats } = flashcard;
   if (!stats.timesAnswered) {
@@ -1233,9 +1246,10 @@ ipcRenderer.on("db:replicated", async (event, payload) => {
 
 const flashcardsQueue = ref([]);
 const queueInProgress = ref(false);
-function handleFlashcards(flashcards) {
+async function handleFlashcards(flashcards) {
   const next = flashcards[0];
 
+  await closeAllModals();
   queueInProgress.value = true;
   next.triggerType = "automatic";
   attemptToOpenAnswerModal(next);

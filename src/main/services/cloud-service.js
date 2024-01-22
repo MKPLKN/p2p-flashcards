@@ -61,6 +61,7 @@ class CloudService {
   }
 
   async disconnect () {
+    if (!this.socket) return
     await this.socket.destroy({ force: true })
   }
 }

@@ -10,7 +10,7 @@ EventService.on('before-quit', async () => {
     if (userService.databaseService) {
       await userService.databaseService.disconnect()
     }
-    if (userService.databaseService) {
+    if (userService.cloudService) {
       await userService.cloudService.disconnect()
     }
   } catch (error) {

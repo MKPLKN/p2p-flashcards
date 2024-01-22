@@ -1,7 +1,7 @@
 {
   "name": "p2p-flashcards",
   "productName": "p2p-flashcards",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Private flashcards to memorise important things",
   "main": ".vite/build/index.js",
   "scripts": {
@@ -19,7 +19,9 @@
       "MAIN_WINDOW_VITE_NAME"
     ]
   },
-  "keywords": ["p2p"],
+  "keywords": [
+    "p2p"
+  ],
   "author": {
     "name": "MKPLKN",
     "email": "15703708+MKPLKN@users.noreply.github.com"

@@ -1,12 +1,14 @@
-const { ipcMain } = require('electron')
-require('./backupHandlers.js')
-require('./authHandlers.js')
-require('./flashcardHandlers.js')
-require('./answerHandlers.js')
+const { userService } = require('../init.js')
+const { createUserHandlers } = require('./user-handlers.js')
+const { createAuthHandlers } = require('./auth-handlers.js')
+const { createCloudHandlers } = require('./cloud-handlers.js')
+const { createFlashcardHandlers } = require('./flashcard-handlers.js')
+const { createAnswerHandlers } = require('./answer-handlers.js')
 
-// Flashcard endpoints
-const { createFlashcardHandlers } = require('./flashcardHandlers.js')
-const flashcardHandlers = createFlashcardHandlers({ })
-ipcMain.handle('flashcards/index', flashcardHandlers.index)
-ipcMain.handle('flashcards/store', flashcardHandlers.store)
-ipcMain.handle('flashcards/destroy', flashcardHandlers.destroy)
+const userHandlers = createUserHandlers(userService)
+const authHandlers = createAuthHandlers(userService)
+const cloudHandlers = createCloudHandlers(userService)
+const flashcardHandlers = createFlashcardHandlers(userService)
+const answerHandlers = createAnswerHandlers(userService)
+
+module.exports = { userHandlers, authHandlers, cloudHandlers, flashcardHandlers, answerHandlers }

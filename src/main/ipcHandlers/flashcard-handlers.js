@@ -1,6 +1,3 @@
-const { Flashcard } = require('../models/flashcard.js')
-const { getMasterDatabase } = require('../helpers.js')
-
 function validateCreateRequest (payload) {
   const { question, answer, confirmation } = payload
   if (!question || !answer || !confirmation) {
@@ -12,10 +9,10 @@ function validateCreateRequest (payload) {
   }
 }
 
-function createFlashcardHandlers ({ db }) {
+function createFlashcardHandlers (userService) {
   return {
     index: async () => {
-      const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+      const model = userService.databaseService.model('flashcard')
       const flashcards = await model.getAll()
 
       for (const fc of flashcards) {
@@ -30,7 +27,7 @@ function createFlashcardHandlers ({ db }) {
 
       try {
         validateCreateRequest(payload)
-        const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+        const model = userService.databaseService.model('flashcard')
         const card = await model.create(payload)
 
         return { success: true, flashcard: card }
@@ -41,7 +38,7 @@ function createFlashcardHandlers ({ db }) {
 
     destroy: async (event, payload) => {
       if (event && !payload) payload = event
-      const model = new Flashcard({ masterDb: db || getMasterDatabase() })
+      const model = userService.databaseService.model('flashcard')
       await (await model.find(payload)).delete()
     }
   }

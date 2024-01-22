@@ -404,7 +404,7 @@ function tabOnClick(tab) {
 
 const invalidLogin = ref(false);
 const submitAuthUser = async () => {
-  const response = await ipcRenderer.invoke("login-attempt", {
+  const response = await ipcRenderer.invoke("auth/login", {
     ...login.value,
   });
 
@@ -442,7 +442,7 @@ function attemptToCloseSeedModal() {
   router.push({ name: "Home" });
 }
 const submitCreateUser = async () => {
-  const response = await ipcRenderer.invoke("create-user-attempt", {
+  const response = await ipcRenderer.invoke("user/create", {
     ...createUser.value,
   });
 
@@ -458,7 +458,7 @@ const submitCreateUser = async () => {
 const restoreUser = ref({});
 const errorMsg = ref(null);
 const submitRestoreUser = async () => {
-  const response = await ipcRenderer.invoke("restore-user-attempt", {
+  const response = await ipcRenderer.invoke("auth/restore", {
     ...restoreUser.value,
   });
 

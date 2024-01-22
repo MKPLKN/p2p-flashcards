@@ -986,7 +986,7 @@ onMounted(async () => {
 
 async function loadSettings() {
   try {
-    const response = await ipcRenderer.invoke("user");
+    const response = await ipcRenderer.invoke("user/get");
     settings.value = response.settings || {};
     backupService.value = response.backupService || defaultBackupService;
   } catch (error) {
@@ -1160,7 +1160,7 @@ async function attemptToOpenViewModal(event, flashcard) {
     return;
   }
 
-  const answers = await store.getAnswers(flashcard.id);
+  const { answers } = await store.getAnswers(flashcard.id);
   activeFlashcard.value = {
     id: flashcard.id,
     stats: flashcard.stats,
@@ -1201,7 +1201,7 @@ function attemptToCloseBackupModal() {
   openBackupModal.value = false;
 }
 async function disconnect() {
-  const response = await ipcRenderer.invoke("disconnect");
+  const response = await ipcRenderer.invoke("cloud/disconnect");
 
   if (response.success) {
     await loadSettings();
@@ -1213,7 +1213,7 @@ async function disconnect() {
 async function saveAndConnect() {
   if (!backup.value.pubkey) return;
 
-  const response = await ipcRenderer.invoke("save-and-connect", {
+  const response = await ipcRenderer.invoke("cloud/connect", {
     pubkey: backup.value.pubkey,
   });
 
@@ -1224,10 +1224,10 @@ async function saveAndConnect() {
 }
 const defaultBackupService = { connected: false, replicated: false };
 const backupService = ref({ ...defaultBackupService });
-ipcRenderer.on("event:backup-service:connect", (event, payload) => {
+ipcRenderer.on("cloud:connected", (event, payload) => {
   backupService.value.connected = payload.success;
 });
-ipcRenderer.on("event:backup-service:replicate", async (event, payload) => {
+ipcRenderer.on("db:replicated", async (event, payload) => {
   backupService.value.replicated = payload.success;
 });
 

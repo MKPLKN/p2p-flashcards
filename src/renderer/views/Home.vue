@@ -1243,6 +1243,11 @@ ipcRenderer.on("cloud:connected", (event, payload) => {
 ipcRenderer.on("db:replicated", async (event, payload) => {
   backupService.value.replicated = payload.success;
 });
+ipcRenderer.on("db:replicated:append", async () => {
+  setTimeout(async () => {
+    await store.getFlashcards();
+  }, 250);
+});
 
 const flashcardsQueue = ref([]);
 const queueInProgress = ref(false);

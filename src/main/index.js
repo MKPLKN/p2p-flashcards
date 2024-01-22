@@ -58,6 +58,10 @@ const createWindow = () => {
       message: 'Real-time data backup activated.'
     })
   })
+  EventService.on('db:replicated:append', (payload) => {
+    if (mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('db:replicated:append')
+  })
   EventService.on('db:socket:closed', () => {
     if (mainWindow.isDestroyed()) return
     mainWindow.webContents.send('db:replicated', {

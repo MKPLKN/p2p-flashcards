@@ -20,7 +20,6 @@ class UserService {
       await this.authenticate({ username, password })
       return { mnemonic }
     } catch (error) {
-      console.log(error)
       throw new Error('User creation failed')
     }
   }
@@ -47,7 +46,6 @@ class UserService {
 
       EventService.emit('authenticated:success', { user: this })
     } catch (error) {
-      console.log(error)
       throw new Error('Authentication failed!')
     }
   }

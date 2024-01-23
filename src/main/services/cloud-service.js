@@ -10,8 +10,8 @@ class CloudService {
     this.socket = null
   }
 
-  _dhtOnError (err) {
-    console.log(err)
+  _dhtOnError (error) {
+    console.log('DHT on error', error)
   }
 
   _dhtOnClose () {
@@ -22,14 +22,6 @@ class CloudService {
       publicKey: this.publicKey,
       connected: this.connected
     })
-  }
-
-  _socketOnClose () {
-    console.log('Cloud service socket on close.')
-  }
-
-  _socketOnError (error) {
-    console.log('Cloud service socket on error', error)
   }
 
   async _dhtOnConnection () {

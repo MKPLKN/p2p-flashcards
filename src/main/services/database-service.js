@@ -1,8 +1,7 @@
 const b4a = require('b4a')
-const Hyperswarm = require('hyperswarm')
 const goodbye = require('graceful-goodbye')
-const { EventService } = require('./event-service')
 const { Flashcard } = require('../models/flashcard')
+const { app } = require('../helpers')
 
 class DatabaseService {
   constructor (db) {
@@ -11,7 +10,7 @@ class DatabaseService {
     this.socket = null
     this.replicated = false
 
-    EventService.on('cloud:connected', this._conntectedToCloud.bind(this))
+    app('events').on('cloud:connected', this._conntectedToCloud.bind(this))
   }
 
   get topic () {
@@ -46,7 +45,7 @@ class DatabaseService {
 
     // @TODO: Maybe we should check do we have a backup key in here?
 
-    this.swarm = new Hyperswarm()
+    this.swarm = app('swarm').make()
     goodbye(() => this.swarm.destroy(), 1)
     this.swarm.on('connection', this._replicate.bind(this))
     console.log('Connect...')
@@ -64,7 +63,7 @@ class DatabaseService {
   }
 
   async _replicate (socket) {
-    EventService.emit('db:socket:open')
+    app('events').emit('db:socket:open')
     this.socket = socket
     const remotePubkey = this.socket.remotePublicKey.toString('hex')
 
@@ -75,9 +74,9 @@ class DatabaseService {
 
     this.db.replicate(socket)
     this.replicated = true
-    EventService.emit('db:replicated', { socket })
+    app('events').emit('db:replicated', { socket })
     this.db.core.once('append', () => {
-      EventService.emit('db:replicated:append', { socket })
+      app('events').emit('db:replicated:append', { socket })
     })
   }
 
@@ -88,7 +87,7 @@ class DatabaseService {
   _socketOnClose () {
     console.log('Swarm connection closed!')
     this.replicated = false
-    EventService.emit('db:socket:closed')
+    app('events').emit('db:socket:closed')
   }
 }
 

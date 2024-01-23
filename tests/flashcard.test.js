@@ -1,7 +1,7 @@
 const { test } = require('brittle')
 const { beforeStart, cleanUp, createAndLogin } = require('./helpers.js')
 const { flashcardHandlers } = require('../src/main/ipcHandlers/index.js')
-const { userService } = require('../src/main/init.js')
+const { app } = require('../src/main/helpers.js')
 
 beforeStart()
 
@@ -27,7 +27,7 @@ test('flashcards/store', async (t) => {
   }
 
   // Valid
-  const model = userService.databaseService.model('flashcard')
+  const model = app('user').databaseService.model('flashcard')
   t.is((await model.getAll()).length, 0)
   response = await flashcardHandlers.store({
     question: 'Test question',
@@ -42,7 +42,7 @@ test('flashcards/store', async (t) => {
 
 test('flashcards/index', async (t) => {
   await createAndLogin()
-  const model = userService.databaseService.model('flashcard')
+  const model = app('user').databaseService.model('flashcard')
 
   t.is((await model.getAll()).length, 0)
   const { flashcard: firstCard } = await flashcardHandlers.store({
@@ -71,7 +71,7 @@ test('flashcards/index', async (t) => {
 
 test('flashcards/destroy', async (t) => {
   await createAndLogin()
-  const model = userService.databaseService.model('flashcard')
+  const model = app('user').databaseService.model('flashcard')
 
   const { flashcard: firstCard } = await flashcardHandlers.store({
     question: 'Test question',

@@ -1,6 +1,5 @@
 const b4a = require('b4a')
-const DHT = require('hyperdht')
-const { EventService } = require('./event-service')
+const { app } = require('../helpers')
 
 class CloudService {
   constructor () {
@@ -18,8 +17,7 @@ class CloudService {
   _dhtOnClose () {
     console.log('DHT connection closed!')
     this.connected = false
-
-    EventService.emit('cloud:disconnected', {
+    app('eventService').emit('cloud:disconnected', {
       username: this.username,
       publicKey: this.publicKey,
       connected: this.connected
@@ -36,10 +34,7 @@ class CloudService {
 
   async _dhtOnConnection () {
     this.connected = true
-    this.socket.on('close', this._socketOnClose)
-    this.socket.on('error', this._socketOnError)
-
-    EventService.emit('cloud:connected', {
+    app('eventService').emit('cloud:connected', {
       socket: this.socket,
       username: this.username,
       publicKey: this.publicKey,
@@ -47,17 +42,20 @@ class CloudService {
     })
   }
 
-  async connect (opts = {}) {
+  connect (opts = {}) {
     const { username, keyPair, connectTo } = opts
     this.username = username
     this.publicKey = keyPair && keyPair.publicKey ? keyPair.publicKey.toString('hex') : null
 
     const pubkeyBuffer = typeof connectTo === 'string' ? b4a.from(connectTo, 'hex') : connectTo
-    this.dht = new DHT({ keyPair })
+    const dht = app('DHT')
+    this.dht = dht.make({ keyPair })
     this.socket = this.dht.connect(pubkeyBuffer)
     this.socket.on('close', this._dhtOnClose.bind(this))
     this.socket.on('error', this._dhtOnError.bind(this))
     this.socket.on('connect', this._dhtOnConnection.bind(this))
+
+    return this.socket
   }
 
   async disconnect () {

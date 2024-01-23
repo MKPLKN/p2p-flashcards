@@ -98,10 +98,7 @@ class Flashcard {
 
   async getAnswers (flashcardID) {
     const id = flashcardID || this.flashcard.id
-    return await this.masterDb.getJsonValue(
-        `memoit-flashcard-answers:${id}`,
-        []
-    )
+    return await this.masterDb.getJsonValue(`memoit-flashcard-answers:${id}`, [])
   }
 
   async updateStats () {

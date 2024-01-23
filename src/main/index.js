@@ -1,12 +1,13 @@
 const path = require('path')
-const { app, BrowserWindow } = require('electron')
-const { EventService } = require('../../src/main/services/event-service.js')
-require('../../src/main/routes.js')
+const { app: electronApp, BrowserWindow } = require('electron')
+const { app } = require('../../src/main/helpers.js')
+
 require('../../src/main/init.js')
+require('../../src/main/routes.js')
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
-  app.quit()
+  electronApp.quit()
 }
 
 const createWindow = () => {
@@ -21,7 +22,7 @@ const createWindow = () => {
     }
   })
 
-  // and load the index.html of the app.
+  // and load the index.html of the electronApp.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
@@ -33,7 +34,7 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools()
   }
 
-  EventService.on('cloud:connected', (payload) => {
+  app('events').on('cloud:connected', (payload) => {
     if (mainWindow.isDestroyed()) return
 
     mainWindow.webContents.send('cloud:connected', {
@@ -41,7 +42,7 @@ const createWindow = () => {
       message: 'Connected!'
     })
   })
-  EventService.on('cloud:disconnected', (payload) => {
+  app('events').on('cloud:disconnected', (payload) => {
     if (mainWindow.isDestroyed()) return
 
     mainWindow.webContents.send('cloud:connected', {
@@ -51,18 +52,18 @@ const createWindow = () => {
     })
   })
 
-  EventService.on('db:replicated', (payload) => {
+  app('events').on('db:replicated', (payload) => {
     if (mainWindow.isDestroyed()) return
     mainWindow.webContents.send('db:replicated', {
       success: true,
       message: 'Real-time data backup activated.'
     })
   })
-  EventService.on('db:replicated:append', (payload) => {
+  app('events').on('db:replicated:append', (payload) => {
     if (mainWindow.isDestroyed()) return
     mainWindow.webContents.send('db:replicated:append')
   })
-  EventService.on('db:socket:closed', () => {
+  app('events').on('db:socket:closed', () => {
     if (mainWindow.isDestroyed()) return
     mainWindow.webContents.send('db:replicated', {
       success: false,
@@ -71,7 +72,7 @@ const createWindow = () => {
     })
   })
 
-  EventService.on('flashcards-in-queue', (flashcards) => {
+  app('events').on('flashcards-in-queue', (flashcards) => {
     if (!mainWindow || mainWindow.isDestroyed()) return
 
     if (mainWindow.isMinimized()) mainWindow.restore()
@@ -84,32 +85,32 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+electronApp.on('ready', createWindow)
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', async () => {
-  EventService.emit('window-all-closed')
+electronApp.on('window-all-closed', async () => {
+  app('events').emit('window-all-closed')
   if (process.platform !== 'darwin') {
-    app.quit()
+    electronApp.quit()
   }
 })
 
 process.on('SIGINT', () => {
-  app.quit()
+  electronApp.quit()
 })
 
-EventService.on('final-goodbye', () => {
-  app.exit()
+app('events').on('final-goodbye', () => {
+  electronApp.exit()
 })
 
-app.on('before-quit', async (event) => {
+electronApp.on('before-quit', async (event) => {
   event.preventDefault()
-  EventService.emit('before-quit', event)
+  app('events').emit('before-quit', event)
 })
 
-app.on('activate', () => {
+electronApp.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -119,3 +120,39 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+let checkForDueFlashcardsInterval = null
+
+app('events').on('before-quit', async () => {
+  try {
+    if (app('user').databaseService) {
+      await app('user').databaseService.disconnect()
+    }
+    if (app('user').cloudService) {
+      await app('user').cloudService.disconnect()
+    }
+  } catch (error) {
+    console.log(error)
+  }
+  clearInterval(checkForDueFlashcardsInterval)
+  app('events').emit('final-goodbye')
+})
+
+async function checkForDueFlashcards () {
+  const now = new Date().getTime()
+  const flashcards = (await app('user').databaseService.model('flashcard').getAll()).filter((fc) => fc.nextAsk.nextDate <= now)
+  if (flashcards.length > 0) {
+    app('events').emit('flashcards-in-queue', flashcards)
+  }
+}
+
+app('events').on('authenticated:success', () => {
+  if (!process.env.NODE_ENV !== 'test') {
+    // Check every minute, should prob be a configurable with on/off possibility
+    checkForDueFlashcardsInterval = setInterval(checkForDueFlashcards, 1000 * 60)
+  }
+})
+
+app('events').on('window-all-closed', () => {
+  clearInterval(checkForDueFlashcardsInterval)
+})

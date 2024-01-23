@@ -17,7 +17,7 @@ function createAnswerHandlers (userService) {
       const { id } = payload
       const model = await userService.databaseService.model('flashcard').find(id)
       const answers = await model.getAnswers()
-      return { success: true, answers }
+      return { success: true, answers: answers.reverse() }
     },
 
     store: async (event, payload) => {

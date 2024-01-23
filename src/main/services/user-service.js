@@ -1,7 +1,7 @@
 const { authUser, createUser, restoreUser } = require('p2p-auth')
 const { initMasterComponents } = require('p2p-resources')
-const { EventService } = require('./event-service')
 const { DatabaseService } = require('./database-service')
+const { app } = require('../helpers')
 
 class UserService {
   constructor (cloudService) {
@@ -11,7 +11,7 @@ class UserService {
     this.databaseService = null
     this.cloudService = cloudService
 
-    EventService.on('authenticated:success', this._authenticated.bind(this))
+    app('events').on('authenticated:success', this._authenticated.bind(this))
   }
 
   async create ({ username, password }) {
@@ -44,7 +44,7 @@ class UserService {
       this.settings = null
       await this.loadSettings()
 
-      EventService.emit('authenticated:success', { user: this })
+      app('events').emit('authenticated:success', { user: this })
     } catch (error) {
       throw new Error('Authentication failed!')
     }
@@ -56,10 +56,10 @@ class UserService {
     this.connect(pubkey)
   }
 
-  async connect (pubkey) {
+  connect (pubkey) {
     if (!this.cloudService) return
 
-    this.cloudService.connect({
+    return this.cloudService.connect({
       username: this.username,
       keyPair: this.keyPair,
       connectTo: pubkey

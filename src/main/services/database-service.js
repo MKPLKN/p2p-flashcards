@@ -82,7 +82,7 @@ class DatabaseService {
   }
 
   _socketOnError (error) {
-    console.log(error)
+    console.log('Socket on error', error)
   }
 
   _socketOnClose () {

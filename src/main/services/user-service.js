@@ -53,11 +53,7 @@ class UserService {
   async _authenticated () {
     const pubkey = await this.getSettings('backup_pub_key')
     if (!pubkey) return
-    this.cloudService.connect({
-      username: this.username,
-      keyPair: this.keyPair,
-      connectTo: pubkey
-    })
+    this.connect(pubkey)
   }
 
   async connect (pubkey) {
